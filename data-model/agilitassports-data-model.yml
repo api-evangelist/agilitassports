@@ -1,0 +1,169 @@
+generated: '2026-09-12'
+method: derived
+source: >-
+  mcp/agilitassports-ucp-mcp-tools.json (live tools/list inputSchemas, HTTP 200 2026-09-12) and
+  https://agilitas.com/products.json (HTTP 200)
+name: Agilitas commerce data model
+slug: agilitassports
+derivation_note: >-
+  There is no OpenAPI and therefore no components.schemas to walk. This graph is derived from the
+  13 MCP tool inputSchemas — the identifiers they accept, the objects they nest, and the GID formats
+  they name — plus the shape of the public storefront product JSON. Response schemas are NOT
+  published by the server, so field lists below are request-side only and marked as such.
+
+entities:
+- name: Product
+  id_format: gid://shopify/Product/{id}
+  addressed_by: [get_product, lookup_catalog, search_catalog]
+  fields_observed_in_storefront_json:
+  - id
+  - title
+  - handle
+  - vendor
+  - product_type
+  - published_at
+  - tags
+  - variants
+  - images
+  - options
+  source_of_fields: https://agilitas.com/products.json
+  relationships:
+  - has_many: ProductVariant
+    via: variants
+
+- name: ProductVariant
+  id_format: gid://shopify/ProductVariant/{id}
+  addressed_by: [lookup_catalog, create_cart, update_cart, create_checkout, update_checkout]
+  note: >-
+    The variant GID is what a line item points at — line_items[].item.id is a Product Variant ID,
+    stated verbatim in the tool schema.
+  relationships:
+  - belongs_to: Product
+
+- name: Cart
+  id_format: gid://shopify/Cart/{id}
+  addressed_by: [get_cart, create_cart, update_cart, cancel_cart]
+  request_fields:
+  - line_items[] {id, quantity, item.id}
+  - buyer {email, phone_number}
+  - context {address_country, address_region, postal_code, language, currency, intent}
+  - fulfillment
+  - discounts.codes[]
+  - attribution {referring_domain, click_id_tag, click_id_value, utm_*}
+  - signals {dev.ucp.buyer_ip, dev.ucp.user_agent}
+  relationships:
+  - has_many: LineItem
+    via: line_items
+  - has_one: Buyer
+    via: buyer
+  - converts_to: Checkout
+    via: create_checkout cart_id
+
+- name: Checkout
+  id_format: gid://shopify/Checkout/{id}
+  addressed_by: [get_checkout, create_checkout, update_checkout, complete_checkout, cancel_checkout]
+  request_fields:
+  - line_items[]
+  - buyer {email, phone_number}
+  - payment.instruments[] {id, handler_id, type, billing_address, credential, display, selected}
+  - fulfillment (methods, destinations)
+  - discounts.codes[]
+  - context
+  relationships:
+  - belongs_to: Cart
+    via: cart_id
+    optional: true
+  - has_many: PaymentInstrument
+    via: payment.instruments
+  - produces: Order
+    via: complete_checkout
+
+- name: PaymentInstrument
+  addressed_by: [create_checkout, update_checkout, complete_checkout]
+  fields:
+  - id
+  - handler_id
+  - type
+  - billing_address {street_address, extended_address, address_locality, address_region, postal_code, address_country, first_name, last_name, phone_number}
+  - credential {token, type, payment_data, transaction_identifier, approval_id}
+  - display {brand, last_digits, expiry_month, expiry_year, funding_source}
+  - selected
+  handlers_declared:
+  - id: gpay
+    handler: com.google.pay
+  - id: shopify.card
+    handler: dev.shopify.card
+  source_of_handlers: https://agilitas.com/.well-known/ucp
+  relationships:
+  - belongs_to: Checkout
+
+- name: Order
+  id_format: gid://shopify/Order/{id}
+  addressed_by: [get_order]
+  relationships:
+  - produced_by: Checkout
+  note: >-
+    Read-only in this contract. No refund, void or cancel operation exists for an order — see the
+    reversibility block in conventions/agilitassports-conventions.yml.
+
+- name: Buyer
+  addressed_by: [create_cart, update_cart, create_checkout, update_checkout]
+  fields: [email, phone_number]
+  relationships:
+  - belongs_to: Cart
+  - belongs_to: Checkout
+
+- name: Address
+  used_as: [billing_address, fulfillment destination]
+  fields: [street_address, extended_address, address_locality, address_region, postal_code, address_country, first_name, last_name, phone_number]
+  country_format: ISO 3166-1 alpha-2
+
+- name: Money
+  kind: value object
+  shape: '{"amount": <integer minor units>, "currency": "<ISO 4217>"}'
+  used_in: [totals, line item prices, catalog price filters]
+
+relationships_summary:
+- from: Product
+  to: ProductVariant
+  kind: has_many
+  via: variants
+- from: ProductVariant
+  to: Product
+  kind: belongs_to
+- from: Cart
+  to: LineItem
+  kind: has_many
+  via: line_items
+- from: LineItem
+  to: ProductVariant
+  kind: belongs_to
+  via: item.id
+- from: Cart
+  to: Checkout
+  kind: converts_to
+  via: cart_id
+- from: Checkout
+  to: PaymentInstrument
+  kind: has_many
+  via: payment.instruments
+- from: Checkout
+  to: Order
+  kind: produces
+  via: complete_checkout
+- from: Checkout
+  to: Buyer
+  kind: has_one
+  via: buyer
+
+gaps:
+- >-
+  No response schemas are published, so the entity fields an agent will actually receive (order
+  status, fulfillment tracking, tax breakdown) are undocumented until observed on a real call.
+- >-
+  There is no customer, subscription, inventory-location or return entity in the agent contract.
+  Returns and cancellations are a human portal flow — see conventions reversibility.
+
+cross_links:
+  conventions: conventions/agilitassports-conventions.yml
+  mcp: mcp/agilitassports-mcp.yml

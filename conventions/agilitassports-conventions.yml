@@ -1,0 +1,226 @@
+generated: '2026-09-12'
+method: derived
+source: >-
+  mcp/agilitassports-ucp-mcp-tools.json (live tools/list, HTTP 200 2026-09-12),
+  https://agilitas.com/agents.md (200), https://agilitas.com/llms.txt (200),
+  https://agilitas.com/robots.txt (200), https://agilitas.com/.well-known/ucp (200),
+  https://agilitas.com/policies/refund-policy (200), live response headers from
+  POST https://agilitas.com/api/ucp/mcp
+name: Agilitas API conventions
+slug: agilitassports
+surface: Agilitas Commerce MCP API (UCP dev.ucp.shopping over MCP)
+
+auth:
+  style: none for transport; agent profile URI on every call; buyer-approved payment instrument at purchase
+  detail: See authentication/agilitassports-authentication.yml.
+
+idempotency:
+  coverage: partial
+  scope:
+  - complete_checkout
+  supported: true
+  mechanism: request field
+  field: meta.idempotency-key
+  required: true
+  type: string
+  retention: not documented
+  evidence: >-
+    complete_checkout inputSchema — meta.properties["idempotency-key"] {"type":"string",
+    "description":"An idempotency key for completing the checkout."} and meta.required includes
+    "idempotency-key". None of the other 12 tools declares an idempotency key.
+  note: >-
+    Exactly one of the thirteen tools — the single money-moving one — requires an idempotency key,
+    which is the right place for it, but it is genuinely partial coverage and not a Stripe-shaped
+    Idempotency-Key header across the write surface. create_cart, create_checkout, update_cart and
+    update_checkout are NOT idempotent and carry no key: an agent that retries create_checkout
+    blindly creates a second checkout. Cancel the orphan with cancel_checkout.
+
+pagination:
+  style: cursor
+  applies_to: [search_catalog]
+  request:
+    cursor: catalog.pagination.cursor
+    limit: catalog.pagination.limit
+    limit_default: 10
+    limit_minimum: 1
+    limit_maximum: not documented
+  response:
+    cursor_field: pagination.cursor
+  note: >-
+    lookup_catalog is bounded rather than paginated — it resolves a batch of product/variant GIDs in
+    one call.
+
+identifiers:
+  style: Shopify Global IDs (GIDs)
+  formats:
+  - entity: Product
+    format: gid://shopify/Product/{id}
+  - entity: ProductVariant
+    format: gid://shopify/ProductVariant/{id}
+  - entity: Cart
+    format: gid://shopify/Cart/{id}
+  - entity: Checkout
+    format: gid://shopify/Checkout/{id}
+  - entity: Order
+    format: gid://shopify/Order/{id}
+
+money:
+  representation: integer minor units paired with an ISO 4217 currency code
+  shape: '{"amount": 2500, "currency": "USD"}'
+  example: '{"amount": 600, "currency": "USD"} is $6.00'
+  filters: catalog.filters.price.min and .max are also minor units
+  note: >-
+    Stated identically in every tool description: "Convert to major units before quoting a price to a
+    buyer (divide by 100 for two-decimal currencies such as USD and EUR; zero-decimal currencies such
+    as JPY are already whole units)." The store is India-facing, so expect INR pricing in practice.
+
+localization:
+  mechanism: context object accepted on catalog, cart and checkout calls
+  fields: [address_country, address_region, postal_code, language, currency, intent]
+  language_format: IETF BCP 47
+  country_format: ISO 3166-1 alpha-2
+  currency_format: ISO 4217
+  precedence: >-
+    "Provisional context hints ... Used when authoritative data (e.g. shipping address) is missing;
+    higher-resolution data supersedes these values and unsupported hints may be ignored without
+    error."
+
+agent_identity:
+  field: meta.ucp-agent.profile
+  required: true
+  applies_to: all 13 tools
+  format: URI
+  failure_mode: >-
+    JSON-RPC error -32001 "UCP discovery failed", data.code "invalid_profile_url". Observed live.
+
+signals:
+  fields: ['dev.ucp.buyer_ip', 'dev.ucp.user_agent']
+  note: >-
+    Platform environment data the agent passes through about the buyer. Privacy-relevant: an agent
+    forwards the buyer's IP and user agent to the merchant.
+
+attribution:
+  supported: true
+  fields: [referring_domain, click_id_tag, click_id_value, utm_campaign, utm_source, utm_medium, utm_content, utm_term]
+  applies_to: [create_cart, update_cart, create_checkout, update_checkout]
+  note: Marketing attribution is a first-class part of the agent contract.
+
+discounts:
+  field: discounts.codes[]
+  semantics: a submitted array replaces previously submitted codes; send an empty array to clear
+
+versioning:
+  scheme: dated protocol versions
+  current: '2026-08-25'
+  also_supported: ['2026-04-08', '2026-01-23']
+  discovery: https://agilitas.com/.well-known/ucp
+  negotiation: per-version profile URLs published under /.well-known/ucp/{version} on the myshopify host
+  response_header: x-shopify-ucp-mcp-api-version
+  mcp_protocol_version: '2024-11-05'
+  detail: See lifecycle/agilitassports-lifecycle.yml.
+
+error_envelope:
+  transport: JSON-RPC 2.0 error object
+  shape: '{"jsonrpc":"2.0","id":<id>,"error":{"code":<int>,"message":"<string>","data":{...}}}'
+  rfc9457: false
+  detail: See errors/agilitassports-problem-types.yml.
+
+request_tracing:
+  supported: true
+  header: x-request-id
+  format: '<uuid>-<epoch-seconds>'
+  observed: '2026-09-12, POST tools/list, HTTP 200'
+  also:
+  - header: server-timing
+    carries: 'processing/db durations, edge, country, asn, requestID, servedBy'
+  - header: x-shopify-ucp-mcp-api-version
+    value_observed: '2026-08-25'
+    meaning: Echoes the UCP protocol version that served the request — usable for version pinning.
+  - header: x-dc
+    value_observed: gcp-us-east1
+  note: >-
+    Quote x-request-id when reporting a problem. Note there is no developer support channel to
+    report it to — https://agilitas.com/pages/contact is retail customer care and a WhatsApp number.
+
+rate_limit_signalling:
+  documented: true
+  quantified: false
+  statement: '"Respect rate limits. The MCP endpoint is rate-limited per IP. Back off on 429 responses."'
+  standard_headers: none documented and none observed on 200 responses
+  cost_headers_observed: [shopify-complexity-score, shopify-complexity-score-v2]
+  cost_values_observed: 'tools/list returned shopify-complexity-score: 310, shopify-complexity-score-v2: 31'
+  budget_headers_observed: []
+  note: >-
+    A cost signal is returned with no corresponding budget or remaining balance, so an agent cannot
+    compute pacing from the response — only react to a 429.
+  detail: See rate-limits/agilitassports-rate-limits.yml.
+
+dry_run_mode:
+  supported: false
+  grade: absent
+  note: >-
+    No test mode, sandbox store, simulated checkout or test payment token is published. An agent
+    cannot rehearse a purchase. create_cart and create_checkout are the nearest thing — real objects
+    with real totals that move no money — and both are reversible (below).
+
+reversibility:
+  applicable: true
+  grade: verified
+  summary: >-
+    Every pre-payment write is reversible through an explicit cancel tool. After complete_checkout
+    there is no programmatic reversal — no refund, void or cancel tool exists in the contract — but
+    Agilitas' published refund policy states real, dated windows: order cancellation any time before
+    dispatch, and return or exchange within 14 days of receiving the order. The reversal is a human
+    portal/WhatsApp flow, not an API call.
+  operations:
+  - write: create_cart
+    reversal: cancel_cart
+    operation_id: cancel_cart
+    window: Any time before the cart is converted to a checkout and paid. No expiry stated.
+    window_stated: false
+    grade: documented
+    source: mcp/agilitassports-ucp-mcp-tools.json
+  - write: create_checkout
+    reversal: cancel_checkout
+    operation_id: cancel_checkout
+    window: Before complete_checkout. Once completed there is no cancel path in the contract.
+    window_stated: false
+    grade: documented
+    source: mcp/agilitassports-ucp-mcp-tools.json
+  - write: update_cart / update_checkout
+    reversal: re-issue the same call with the prior values
+    operation_id: update_cart, update_checkout
+    window: unbounded while the cart/checkout is open
+    window_stated: false
+    grade: documented
+    note: >-
+      Full-replacement semantics on discounts.codes[] make that update self-reversing; line items are
+      addressed by line-item id.
+  - write: complete_checkout
+    reversal: none in the API — human channel only
+    operation_id: null
+    window: >-
+      Cancellation: "provided that your order has not been dispatched" — and the whole order only,
+      not a single item. Return: "within 14 days from the date of receiving the order", free of
+      charge, items unworn/unwashed with original packaging and tags intact. Exchange: within 14
+      days of delivery, for any other Lotto product on the site. Socks are final sale and never
+      returnable or exchangeable. Products bought in offline stores or other channels are not
+      returnable here.
+    window_stated: true
+    grade: verified
+    source: https://agilitas.com/policies/refund-policy
+    docs: https://agilitas.com/policies/refund-policy
+    channel: >-
+      Return and exchange portal, the order history in a registered account, or WhatsApp
+      +91-8150863126. There is no programmatic path — an agent must hand the buyer off.
+    note: >-
+      An agent may truthfully tell a buyer a completed Agilitas order can be cancelled before
+      dispatch and returned within 14 days of delivery, but must not promise to do it itself.
+
+cross_links:
+  errors: errors/agilitassports-problem-types.yml
+  lifecycle: lifecycle/agilitassports-lifecycle.yml
+  authentication: authentication/agilitassports-authentication.yml
+  scopes: scopes/agilitassports-scopes.yml
+  rate_limits: rate-limits/agilitassports-rate-limits.yml
+  data_model: data-model/agilitassports-data-model.yml

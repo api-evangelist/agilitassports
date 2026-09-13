@@ -1,0 +1,34 @@
+generated: '2026-09-12'
+method: searched
+source: >-
+  https://agilitas.com/ (200), https://agilitas.com/llms.txt (200),
+  https://agilitas.com/agents.md (200), https://agilitas.com/policies/terms-of-service (200),
+  https://agilitas.com/products.json (200) — searched 2026-09-12
+name: Agilitas plans and pricing
+slug: agilitassports
+
+plan_count: 0
+note: >-
+  Agilitas publishes no API plans, tiers, quotas or developer pricing of any kind, because it runs no
+  developer program. The agent surface it does expose — the UCP/MCP commerce endpoints and the
+  documented storefront JSON routes — is free and anonymous to call, with no signup, no key and no
+  metering disclosed. What is priced here is merchandise: footwear and apparel sold to consumers,
+  individually priced per product variant in the storefront catalog. There is no "contact sales"
+  API gate either; there is simply nothing to buy as a developer.
+
+plans: []
+
+commercial_model:
+  type: direct-to-consumer retail
+  what_is_sold: sports footwear and apparel (Lotto, one8, Mochiko-manufactured product)
+  priced_at: per product variant, in the storefront catalog
+  api_monetization: none
+  agent_access_cost: free, anonymous, unmetered as published
+  storefront_catalog_size_observed: 4 products on https://agilitas.com/products.json, 2026-09-12
+  currency_note: >-
+    Money in the UCP contract is integer minor units with an ISO 4217 code; the store is India-facing
+    so expect INR at the storefront.
+
+cross_links:
+  rate_limits: rate-limits/agilitassports-rate-limits.yml
+  conventions: conventions/agilitassports-conventions.yml

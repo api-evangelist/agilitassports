@@ -1,0 +1,213 @@
+generated: '2026-09-12'
+method: probed
+source: >-
+  https://agilitas.com/llms.txt (HTTP 200) and https://agilitas.com/robots.txt (HTTP 200) named the
+  endpoints; https://agilitas.com/.well-known/ucp (HTTP 200) carries the UCP service block; JSON-RPC
+  initialize and tools/list POSTed live to https://agilitas.com/api/ucp/mcp (HTTP 200) and
+  https://agilitas.com/api/mcp (HTTP 200) on 2026-09-12
+name: Agilitas Model Context Protocol servers
+slug: agilitassports
+
+ownership:
+  note: >-
+    Both MCP endpoints answer on agilitas.com, the company's own storefront domain (agilitas.in and
+    www.agilitas.in 301 to it). The storefront HTML declares "shopId":99796025642 and the UCP profile
+    served at https://agilitas.com/.well-known/ucp names the Shopify permanent domain
+    aq0zmc-sj.myshopify.com and Google Pay merchant_info.merchant_name "Agilitas" with
+    merchant_origin "agilitas.com". A myshopify permanent domain and a shop id belong to exactly one
+    merchant, so this is Agilitas' own surface hosted on its commerce platform, not another
+    company's. The tool set itself is authored by Shopify (UCP), not by Agilitas — see
+    platform_authored below.
+  evidence:
+  - url: https://agilitas.com/
+    signal: '"shopId":99796025642'
+    http_status: 200
+  - url: https://agilitas.com/.well-known/ucp
+    signal: 'payment_handlers["com.google.pay"][0].config.merchant_info.merchant_name = "Agilitas", merchant_origin = "agilitas.com"'
+    http_status: 200
+
+platform_authored: true
+platform: Shopify (Universal Commerce Protocol)
+platform_note: >-
+  Agilitas did not author these tools. Shopify ships UCP and the storefront MCP to its merchants, and
+  the merchant's decision is to run a Shopify store and leave the agent surface enabled. The surface
+  is nonetheless real, first-party-hosted and callable on the Agilitas domain today, which is what
+  an agent cares about. Recorded so no reader mistakes it for a bespoke API program.
+
+deployment:
+  mode: remote
+  endpoint: https://agilitas.com/api/ucp/mcp
+  install: null
+  package: null
+  auth: none
+  verified: probed
+  note: >-
+    Remote only. There is no first-party stdio package — nothing to npx or pip install. The endpoint
+    answers an unauthenticated JSON-RPC initialize and tools/list. Buyer payment credentials are
+    supplied per-call through the checkout payment instrument, not through a server credential.
+
+endpoint_agreement:
+  claim: >-
+    https://agilitas.com/llms.txt, /agents.md and /robots.txt all instruct agents to POST to
+    https://agilitas.com/api/ucp/mcp.
+  observed: >-
+    That URL answers HTTP 200. The Shopify permanent domain
+    https://aq0zmc-sj.myshopify.com/api/ucp/mcp — the endpoint named inside the /.well-known/ucp
+    services block — also answers HTTP 200. Both routes work, so an agent that follows the published
+    llms.txt and an agent that follows UCP discovery both reach the server.
+  probed: '2026-09-12'
+  evidence:
+  - url: https://agilitas.com/api/ucp/mcp
+    method: POST
+    http_status: 200
+  - url: https://agilitas.com/api/mcp
+    method: POST
+    http_status: 200
+  - url: https://aq0zmc-sj.myshopify.com/api/ucp/mcp
+    method: POST
+    http_status: 200
+  - url: https://aq0zmc-sj.myshopify.com/api/mcp
+    method: POST
+    http_status: 200
+  - url: https://agilitas.com/api/ucp/mcp
+    method: GET
+    http_status: 404
+    note: The endpoint is POST-only; a GET 404 is expected and is not an outage.
+
+servers:
+- name: Agilitas UCP Commerce MCP
+  endpoint: https://agilitas.com/api/ucp/mcp
+  alternate_endpoint: https://aq0zmc-sj.myshopify.com/api/ucp/mcp
+  transport: streamable-http
+  protocol_version: '2024-11-05'
+  protocol_version_note: >-
+    Echoed by the live initialize response. Older than the 2025-06-18 revision other Shopify UCP
+    merchants return; recorded as observed, not corrected.
+  server_info:
+    name: universal-commerce
+    version: 0.1.0
+  capabilities:
+    tools:
+      listChanged: true
+    prompts:
+      listChanged: true
+    resources:
+      listChanged: true
+    logging: {}
+  auth: none
+  status: live
+  tools_file: mcp/agilitassports-ucp-mcp-tools.json
+  tool_count: 13
+  tools:
+  - name: search_catalog
+    category: catalog
+    write: false
+    summary: >-
+      Search store products by natural-language query and/or filters (categories, price min/max in
+      minor units, availability). Cursor-paginated.
+  - name: lookup_catalog
+    category: catalog
+    write: false
+    summary: Resolve product or variant GIDs in one request, grouped by product.
+  - name: get_product
+    category: catalog
+    write: false
+    summary: >-
+      Full product detail for one product ID, with variants, exact pricing and real-time
+      availability.
+  - name: get_cart
+    category: cart
+    write: false
+    summary: Return cart contents for a gid://shopify/Cart/... identifier.
+  - name: create_cart
+    category: cart
+    write: true
+    summary: Create a cart from line items, with optional buyer, context, fulfillment and discount codes.
+  - name: update_cart
+    category: cart
+    write: true
+    summary: Update line items, buyer, context, fulfillment or discount codes on an existing cart.
+  - name: cancel_cart
+    category: cart
+    write: true
+    reverses: create_cart
+    summary: Cancel a cart.
+  - name: get_checkout
+    category: checkout
+    write: false
+    summary: Return checkout detail including line items, totals, discounts and taxes.
+  - name: create_checkout
+    category: checkout
+    write: true
+    summary: >-
+      Create a checkout from line items or an existing cart, carrying buyer, fulfillment, discount
+      codes and payment instruments.
+  - name: update_checkout
+    category: checkout
+    write: true
+    summary: Update line items, buyer, fulfillment selection, discounts or payment instruments on a checkout.
+  - name: complete_checkout
+    category: checkout
+    write: true
+    summary: >-
+      Finalize the purchase. REQUIRES meta.idempotency-key, and the provider's own agent
+      instructions require contemporaneous buyer approval of payment.
+  - name: cancel_checkout
+    category: checkout
+    write: true
+    reverses: create_checkout
+    summary: Cancel a checkout that has not been completed.
+  - name: get_order
+    category: order
+    write: false
+    summary: Return order detail for a gid://shopify/Order/... identifier.
+
+- name: Agilitas Storefront MCP
+  endpoint: https://agilitas.com/api/mcp
+  alternate_endpoint: https://aq0zmc-sj.myshopify.com/api/mcp
+  transport: streamable-http
+  auth: none
+  status: live
+  tools_file: mcp/agilitassports-storefront-mcp-tools.json
+  tool_count: 1
+  tools:
+  - name: search_shop_policies_and_faqs
+    category: support
+    write: false
+    summary: >-
+      Natural-language question answering over the store's policies, products and services (return
+      policy, shipping policy, phone number, hours of operation).
+  note: >-
+    Only the policy/FAQ tool is exposed. The Shopify storefront catalog search tools are not
+    enabled on this server; catalog access is through the UCP server instead.
+
+protocols:
+- name: Universal Commerce Protocol
+  id: dev.ucp.shopping
+  version: '2026-08-25'
+  supported_versions:
+  - '2026-08-25'
+  - '2026-04-08'
+  - '2026-01-23'
+  discovery: https://agilitas.com/.well-known/ucp
+  spec: https://ucp.dev/2026-08-25/specification/overview/
+  schema: https://ucp.dev/2026-08-25/services/shopping/mcp.openrpc.json
+- name: Model Context Protocol
+  version: '2024-11-05'
+  transport: streamable-http (JSON-RPC 2.0 over HTTP POST)
+
+notes:
+- >-
+  meta.ucp-agent.profile (a URI identifying the calling agent's UCP profile) is a REQUIRED input on
+  every one of the 13 UCP tools. Calls that omit it fail closed with JSON-RPC error -32001
+  "UCP discovery failed" / invalid_profile_url before any tool logic runs — observed live on
+  tools/call, prompts/list and resources/list.
+- >-
+  All monetary values in requests and responses are integers in ISO 4217 minor units paired with a
+  currency code — {"amount": 2500, "currency": "USD"} is $25.00.
+- >-
+  There is no first-party Agilitas SDK, CLI or stdio MCP package, and no developer portal. The two
+  remote endpoints plus the documented storefront JSON routes are the entire programmable surface.
+- >-
+  The store is small and India-facing: https://agilitas.com/products.json returned 4 products on
+  2026-09-12, all Lotto footwear. The agent surface is live but the catalog behind it is early.

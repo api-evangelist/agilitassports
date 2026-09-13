@@ -1,0 +1,49 @@
+generated: '2026-09-12'
+method: probed
+source: https://agilitas.com/.well-known/openid-configuration (HTTP 200, fetched 2026-09-12)
+name: Agilitas OAuth scopes
+slug: agilitassports
+docs: null
+docs_note: >-
+  Agilitas publishes no scope reference page of its own. The scope list below is read verbatim from
+  the scopes_supported array of the OIDC discovery document served at the Agilitas domain; the
+  descriptions are Shopify customer-account semantics, marked as such.
+
+authorization_server: https://shopify.com/authentication/99796025642
+operator: Shopify (customer-account identity provider for shop 99796025642)
+applies_to: >-
+  Shopper sign-in to a customer account. NOT the anonymous UCP/MCP commerce surface, which requires
+  no token at all — see authentication/agilitassports-authentication.yml.
+
+scope_count: 4
+scopes:
+- name: openid
+  standard: OpenID Connect Core
+  description: Request an ID token identifying the signed-in shopper.
+  source: discovery
+- name: email
+  standard: OpenID Connect Core
+  description: Release the shopper's email and email_verified claims.
+  source: discovery
+- name: customer-account-api:full
+  standard: Shopify
+  description: >-
+    Full access to the Shopify Customer Account API on behalf of the signed-in shopper (orders,
+    addresses, profile). Semantics are Shopify's; Agilitas documents none of it.
+  source: discovery
+- name: customer-account-mcp-api:full
+  standard: Shopify
+  description: >-
+    Full access to the authenticated Shopify customer-account MCP API on behalf of the signed-in
+    shopper. Not documented or advertised anywhere on an Agilitas host; listed here only because the
+    discovery document served on agilitas.com names it.
+  source: discovery
+
+claims_supported: [iss, sub, aud, exp, iat, nonce, sid, email, email_verified]
+code_challenge_methods_supported: [S256]
+response_types_supported: [code]
+
+note: >-
+  No client registration endpoint is published and no public client_id is documented, so these
+  scopes are not requestable by a third-party integrator today. They are recorded as probed fact,
+  not as an available developer surface.

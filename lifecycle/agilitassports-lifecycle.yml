@@ -1,0 +1,77 @@
+generated: '2026-09-12'
+method: probed
+source: >-
+  https://agilitas.com/.well-known/ucp (200), response headers on
+  POST https://agilitas.com/api/ucp/mcp (200), live MCP initialize (200),
+  https://agilitas.com/llms.txt (200) — 2026-09-12
+name: Agilitas API lifecycle
+slug: agilitassports
+
+versioning:
+  scheme: dated protocol versions (UCP), negotiated through discovery
+  current: '2026-08-25'
+  supported:
+  - version: '2026-08-25'
+    status: current
+    profile: https://agilitas.com/.well-known/ucp
+  - version: '2026-04-08'
+    status: supported
+    profile: https://aq0zmc-sj.myshopify.com/.well-known/ucp/2026-04-08
+  - version: '2026-01-23'
+    status: supported
+    profile: https://aq0zmc-sj.myshopify.com/.well-known/ucp/2026-01-23
+  response_header: x-shopify-ucp-mcp-api-version
+  response_header_value_observed: '2026-08-25'
+  mcp_protocol_version: '2024-11-05'
+  mcp_protocol_note: >-
+    Returned by the live initialize handshake. Older than the 2025-06-18 MCP revision seen on other
+    Shopify UCP merchants; recorded as observed.
+  owner: >-
+    The version ladder is Shopify's, published on the Agilitas domain. Agilitas does not version
+    anything itself and has no say in the cadence.
+
+deprecation_policy:
+  published: false
+  sunset_header: not observed
+  deprecation_header: not observed
+  rfc8594: false
+  note: >-
+    No deprecation or sunset policy is published on any Agilitas host, and no Deprecation or Sunset
+    header was returned. Prior UCP versions remain reachable through their own profile URLs, which is
+    a de facto compatibility posture rather than a stated policy. No Deprecation pointer is claimed.
+
+status_page:
+  published: false
+  url: null
+  note: >-
+    Agilitas publishes no status page and no uptime history. The underlying platform status page is
+    Shopify's (status.shopify.com), which is not an Agilitas surface and is not claimed as one. No
+    StatusPage pointer is emitted.
+
+sla:
+  published: false
+  note: No SLA, uptime commitment or support-response target is published for the agent surface.
+
+changelog:
+  published: false
+  note: >-
+    No API changelog. The company's press blog at https://agilitas.com/blogs/press-and-media is
+    corporate news (funding, brand launches, athlete signings), not release notes, so no ChangeLog
+    pointer is claimed.
+
+deprecated_operations: []
+deprecated_operations_note: >-
+  Nothing in the live tools/list is marked deprecated. There is no OpenAPI to read deprecated:true
+  from.
+
+surface_maturity:
+  agent_surface: live
+  catalog_behind_it: early — 4 products published on 2026-09-12, all Lotto footwear
+  company_founded: '2023-02'
+  note: >-
+    The company is young and the direct-to-consumer storefront is newer still. The agent surface is
+    fully functional but the inventory an agent can act on today is small.
+
+cross_links:
+  conventions: conventions/agilitassports-conventions.yml
+  mcp: mcp/agilitassports-mcp.yml

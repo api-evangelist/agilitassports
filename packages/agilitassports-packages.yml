@@ -1,0 +1,48 @@
+generated: '2026-09-12'
+method: searched
+source: >-
+  Registry searches on registry.npmjs.org (2026-09-12), pypi.org/pypi/agilitas/json (HTTP 404),
+  api.github.com/orgs/{agilitas,agilitas-sports,agilitassports}, and the provider's own
+  https://agilitas.com/llms.txt and https://agilitas.com/agents.md (both HTTP 200)
+name: Agilitas packages and SDKs
+slug: agilitassports
+
+package_count: 0
+official_package_count: 0
+packages: []
+
+finding: >-
+  Agilitas ships no client library in any registry. There is no first-party SDK, no CLI, no stdio MCP
+  package and no published code of any kind. The entire programmable surface is the two remote MCP
+  endpoints plus the documented read-only storefront JSON routes — all callable over plain HTTP with
+  no dependency to install. No SDKs pointer is claimed in apis.yml, because claiming one would assert
+  a client library that does not exist.
+
+registries_checked:
+- registry: npm
+  query: ['agilitas', 'agilitas-sports']
+  result: no package published by or for this company
+  checked: '2026-09-12'
+- registry: PyPI
+  query: agilitas
+  url: https://pypi.org/pypi/agilitas/json
+  http_status: 404
+  result: absent
+  checked: '2026-09-12'
+- registry: GitHub organizations
+  queried: [agilitas, agilitas-sports, agilitassports]
+  result: >-
+    github.com/agilitas-sports and github.com/agilitassports return 404. github.com/Agilitas returns
+    200 but is "Agilitas Ltd", Isle of Man, described as "Engineered Software Solutions" with blog
+    www.agilitas.im — a DIFFERENT company that merely shares the name. It is deliberately NOT wired
+    as this company's GitHubOrganization.
+  checked: '2026-09-12'
+
+third_party_note: >-
+  The provider's own /llms.txt recommends https://shop.app/SKILL.md for personal shopping agents.
+  That is a Shopify cross-store skill, not an Agilitas package, and is recorded in skills/_index.yml
+  rather than here.
+
+cross_links:
+  mcp: mcp/agilitassports-mcp.yml
+  skills: skills/_index.yml

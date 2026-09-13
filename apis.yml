@@ -1,23 +1,155 @@
 aid: agilitassports
-name: Agilitassports
-description: 'Agilitassports is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+name: Agilitas Sports
+description: >-
+  Agilitas Sports Private Limited is a Bengaluru-based sports and athleisure company founded in
+  February 2023 by former Puma India leaders Abhishek Ganguly, Atul Bajaj and Amit Prabhu, built as a
+  vertically integrated manufacture-brand-retail ecosystem rather than a software business. It
+  acquired Mochiko Shoes, one of India's largest sports footwear manufacturers, holds the exclusive
+  India licence for Lotto, and runs the one8 brand with Virat Kohli. It publishes no developer
+  program and no OpenAPI, but its Shopify storefront at agilitas.com serves a real agent-facing
+  commerce surface: /llms.txt and /agents.md, a /.well-known/ucp Universal Commerce Protocol merchant
+  profile (UCP 2026-08-25), and two live unauthenticated Model Context Protocol endpoints — a
+  thirteen-tool catalog/cart/checkout/order server and a one-tool policy-and-FAQ server.
+image: https://agilitas.com/cdn/shop/files/512.jpg?v=1782028242
 url: https://raw.githubusercontent.com/api-evangelist/agilitassports/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
 specificationVersion: '0.20'
 created: '2026-09-12'
 modified: '2026-09-12'
 tags:
 - Company
-apis: []
+- Commerce
+- E-Commerce
+- Retail
+- Sportswear
+- Footwear
+- Athleisure
+- Manufacturing
+- Agentic Commerce
+- Universal Commerce Protocol
+- Model Context Protocol
+- Shopify
+- India
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
+apis:
+- aid: agilitassports:agilitassports-commerce-mcp-api
+  name: Agilitas Commerce MCP API
+  description: >-
+    The agent-facing commerce surface for the Agilitas store, implementing the Universal Commerce
+    Protocol (dev.ucp.shopping) over the Model Context Protocol. Thirteen tools cover catalog search
+    and lookup, product detail, cart create/update/cancel, checkout create/update/complete/cancel and
+    order retrieval. Anonymous — no API key or OAuth token is needed to initialize, list tools or
+    search the catalog — but every tool requires a meta.ucp-agent.profile URI, complete_checkout
+    additionally requires meta.idempotency-key, and the provider's own agent instructions require
+    contemporaneous buyer approval before any payment is completed.
+  humanURL: https://agilitas.com/agents.md
+  baseURL: https://agilitas.com/api/ucp/mcp
+  tags:
+  - Commerce
+  - Catalog
+  - Cart
+  - Checkout
+  - Orders
+  - Agentic Commerce
+  properties:
+  - type: Documentation
+    url: https://agilitas.com/agents.md
+  - type: MCPServer
+    url: mcp/agilitassports-mcp.yml
+  - type: WellKnown
+    url: well-known/agilitassports-ucp.json
+  - type: Authentication
+    url: authentication/agilitassports-authentication.yml
+  - type: Conventions
+    url: conventions/agilitassports-conventions.yml
+  - type: Idempotency
+    url: conventions/agilitassports-conventions.yml
+  - type: DataModel
+    url: data-model/agilitassports-data-model.yml
+  - type: ErrorCatalog
+    url: errors/agilitassports-problem-types.yml
+  - type: RateLimits
+    url: rate-limits/agilitassports-rate-limits.yml
+- aid: agilitassports:agilitassports-storefront-json-api
+  name: Agilitas Storefront JSON API
+  description: >-
+    The read-only storefront JSON endpoints Agilitas names for agents in its own /llms.txt and
+    /agents.md — product JSON at /products/{handle}.json, collection product listings at
+    /collections/{handle}/products.json, the all-products feed at /products.json, and the sitemap set
+    including a dedicated agentic-discovery sitemap. No authentication is required. These are Shopify
+    Online Store routes served on the Agilitas domain and named by Agilitas in its own published
+    agent instructions.
+  humanURL: https://agilitas.com/llms.txt
+  baseURL: https://agilitas.com
+  x-base-note: >-
+    The site root IS the API base for this entry, not a marketing URL standing in for one. Shopify
+    Online Store JSON routes are served off the storefront origin — https://agilitas.com/products.json
+    returned HTTP 200 application/json on 2026-09-12 — and Agilitas names exactly these paths in its
+    own /llms.txt.
+  tags:
+  - Products
+  - Collections
+  - Catalog
+  - Sitemap
+  properties:
+  - type: Documentation
+    url: https://agilitas.com/llms.txt
+  - type: LLMsTxt
+    url: llms/agilitassports-llms.txt
 common:
 - type: Website
-  url: https://equityzen.com/company/agilitassports
+  url: https://agilitas.com/
+- type: Documentation
+  url: https://agilitas.com/agents.md
+- type: Support
+  url: https://agilitas.com/pages/contact
+- type: Blog
+  url: https://agilitas.com/blogs/press-and-media
+- type: TermsOfService
+  url: https://agilitas.com/policies/terms-of-service
+- type: PrivacyPolicy
+  url: https://agilitas.com/policies/privacy-policy
+- type: MCPServer
+  url: mcp/agilitassports-mcp.yml
+- type: LLMsTxt
+  url: llms/agilitassports-llms.txt
+- type: WellKnown
+  url: well-known/agilitassports-well-known.yml
+- type: Authentication
+  url: authentication/agilitassports-authentication.yml
+- type: OAuthScopes
+  url: scopes/agilitassports-scopes.yml
+- type: Conventions
+  url: conventions/agilitassports-conventions.yml
+- type: Idempotency
+  url: conventions/agilitassports-conventions.yml
+- type: ErrorCatalog
+  url: errors/agilitassports-problem-types.yml
+- type: RateLimits
+  url: rate-limits/agilitassports-rate-limits.yml
+- type: Plans
+  url: plans/agilitassports-plans-pricing.yml
+- type: Lifecycle
+  url: lifecycle/agilitassports-lifecycle.yml
+- type: Conformance
+  url: conformance/agilitassports-conformance.yml
+- type: DataModel
+  url: data-model/agilitassports-data-model.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: Packages
+  url: packages/agilitassports-packages.yml
+- type: DomainSecurity
+  url: security/agilitassports-domain-security.yml
+x-enrichment:
+  date: '2026-09-12'
+  status: enriched
+  artifacts_added: 25
+  pass: local-v3
+x-coverage:
+  state: covered

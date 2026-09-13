@@ -1,0 +1,51 @@
+generated: '2026-09-12'
+method: generated
+source: >-
+  Grounded in mcp/agilitassports-ucp-mcp-tools.json (live tools/list, HTTP 200 2026-09-12), the
+  merchant profile at https://agilitas.com/.well-known/ucp (200), the provider's own agent
+  instructions at https://agilitas.com/agents.md (200), and
+  https://agilitas.com/policies/refund-policy (200)
+name: Agilitas agent skills
+slug: agilitassports
+
+note: >-
+  Agilitas publishes no first-party Agent Skill of its own; its /llms.txt instead recommends the
+  cross-store Shop skill at https://shop.app/SKILL.md, which is Shopify's, not Agilitas'. The skills
+  below are API Evangelist-authored packagings of the merchant's REAL, live tool surface — every tool
+  name, parameter path, requirement and policy window below was read from the server's own tools/list
+  response or from an Agilitas policy page, and nothing is invented. There is no OpenAPI to ground
+  them in; the MCP inputSchemas are the contract.
+
+api: Agilitas Commerce MCP API
+endpoint: https://agilitas.com/api/ucp/mcp
+
+skills:
+- name: agilitassports-browse-the-catalog
+  file: skills/agilitassports-browse-the-catalog.md
+  description: >-
+    Search the Agilitas (Lotto / one8) catalog, resolve product detail, and quote prices to a buyer
+    without getting the currency wrong.
+  tools: [search_catalog, lookup_catalog, get_product]
+  write: false
+- name: agilitassports-build-an-order
+  file: skills/agilitassports-build-an-order.md
+  description: >-
+    Assemble a cart, set the buyer and destination, convert it to a priced checkout, and back out
+    cleanly if the buyer changes their mind.
+  tools: [create_cart, update_cart, get_cart, cancel_cart, create_checkout, get_checkout, update_checkout, cancel_checkout]
+  write: true
+- name: agilitassports-complete-purchase-safely
+  file: skills/agilitassports-complete-purchase-safely.md
+  description: >-
+    Complete payment with contemporaneous buyer approval and an idempotency key, confirm the order,
+    and tell the buyer accurately what can still be undone.
+  tools: [update_checkout, complete_checkout, get_order]
+  write: true
+
+provider_published_skills:
+- url: https://shop.app/SKILL.md
+  owner: Shopify (shop.app)
+  first_party_to_agilitas: false
+  note: >-
+    Recommended by Agilitas' own /llms.txt and /robots.txt for personal shopping agents, but it is a
+    cross-store Shopify skill, not an Agilitas artifact.

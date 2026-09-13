@@ -1,0 +1,161 @@
+generated: '2026-09-12'
+method: probed
+source: >-
+  https://agilitas.com/.well-known/ucp (200), https://agilitas.com/.well-known/openid-configuration
+  (200), https://agilitas.com/.well-known/oauth-protected-resource (200), live MCP initialize and
+  tools/list on https://agilitas.com/api/ucp/mcp (200), https://agilitas.com/llms.txt (200) —
+  2026-09-12
+name: Agilitas conformance
+slug: agilitassports
+
+conformance:
+- id: ucp
+  name: Universal Commerce Protocol
+  version: '2026-08-25'
+  conforms: true
+  domain_standard: true
+  market: agentic commerce / retail checkout
+  evidence: >-
+    https://agilitas.com/.well-known/ucp returns a UCP merchant profile declaring
+    ucp.version "2026-08-25", the dev.ucp.shopping service with transport "mcp", and the capability
+    set dev.ucp.shopping.checkout, .cart, .order, .fulfillment, .discount, .catalog.search and
+    .catalog.lookup plus the dev.shopify.catalog extension. The declared tools answer live.
+  evidence_url: https://agilitas.com/.well-known/ucp
+  spec: https://ucp.dev/2026-08-25/specification/overview/
+  note: >-
+    This is the domain-standard signature for this market: an agent that already speaks UCP can
+    transact with this merchant with no bespoke connector. Implemented by the Shopify platform on the
+    merchant's behalf, not authored by Agilitas.
+
+- id: mcp
+  name: Model Context Protocol
+  version: '2024-11-05'
+  conforms: true
+  evidence: >-
+    JSON-RPC 2.0 initialize returned protocolVersion "2024-11-05", serverInfo
+    {"name":"universal-commerce","version":"0.1.0"} and capabilities for tools, prompts, resources
+    and logging; tools/list returned 13 tools each with a JSON Schema 2020-12 inputSchema.
+  evidence_url: https://agilitas.com/api/ucp/mcp
+  probed: '2026-09-12'
+
+- id: json-rpc-2.0
+  name: JSON-RPC 2.0
+  conforms: true
+  evidence: >-
+    Both success and error responses carry "jsonrpc":"2.0" with the request id echoed; errors use the
+    standard {code, message, data} object (server-defined code -32001 observed).
+  evidence_url: https://agilitas.com/api/ucp/mcp
+
+- id: json-schema-2020-12
+  name: JSON Schema draft 2020-12
+  conforms: true
+  evidence: >-
+    Every tool inputSchema declares
+    "$schema":"https://json-schema.org/draft/2020-12/schema", and the checkout schemas use
+    allOf/if/then/else conditional composition.
+  evidence_url: mcp/agilitassports-ucp-mcp-tools.json
+
+- id: oidc
+  name: OpenID Connect Discovery 1.0
+  conforms: true
+  evidence: >-
+    /.well-known/openid-configuration returns issuer, authorization_endpoint, token_endpoint,
+    jwks_uri, end_session_endpoint, response_types_supported ["code"], subject_types_supported
+    ["public"] and id_token_signing_alg_values_supported ["RS256"].
+  evidence_url: https://agilitas.com/.well-known/openid-configuration
+  note: Shopify-operated customer-account identity, served on the Agilitas domain.
+
+- id: oauth2
+  name: OAuth 2.0 (RFC 6749) with PKCE (RFC 7636)
+  conforms: true
+  evidence: >-
+    grant_types_supported [authorization_code, refresh_token,
+    urn:ietf:params:oauth:grant-type:jwt-bearer]; code_challenge_methods_supported ["S256"].
+  evidence_url: https://agilitas.com/.well-known/openid-configuration
+
+- id: rfc8414
+  name: OAuth 2.0 Authorization Server Metadata
+  conforms: true
+  evidence: /.well-known/oauth-authorization-server returns the metadata document (HTTP 200).
+  evidence_url: https://agilitas.com/.well-known/oauth-authorization-server
+
+- id: rfc9728
+  name: OAuth 2.0 Protected Resource Metadata
+  conforms: true
+  evidence: >-
+    /.well-known/oauth-protected-resource returns {"resource":"https://agilitas.com",
+    "authorization_servers":["https://shopify.com/authentication/99796025642"],
+    "bearer_methods_supported":["header"]}.
+  evidence_url: https://agilitas.com/.well-known/oauth-protected-resource
+
+- id: llmstxt
+  name: llms.txt
+  conforms: true
+  evidence: https://agilitas.com/llms.txt returns a real agent-instruction document (HTTP 200).
+  evidence_url: https://agilitas.com/llms.txt
+
+- id: idempotency
+  name: Idempotent write semantics
+  conforms: partial
+  evidence: >-
+    meta.idempotency-key is required on complete_checkout and on no other tool. See
+    conventions/agilitassports-conventions.yml idempotency.coverage = partial.
+  evidence_url: mcp/agilitassports-ucp-mcp-tools.json
+
+- id: pagination
+  name: Cursor pagination
+  conforms: true
+  evidence: >-
+    search_catalog accepts catalog.pagination.cursor and .limit (default 10, minimum 1) and returns
+    pagination.cursor.
+  evidence_url: mcp/agilitassports-ucp-mcp-tools.json
+
+- id: rfc9457
+  name: RFC 9457 Problem Details
+  conforms: false
+  evidence: >-
+    No application/problem+json on any probed response. Errors are JSON-RPC error objects returned
+    inside HTTP 200.
+  evidence_url: errors/agilitassports-problem-types.yml
+
+- id: rfc9116
+  name: RFC 9116 security.txt
+  conforms: false
+  evidence: >-
+    /.well-known/security.txt returns HTTP 404 on agilitas.com, www.agilitas.com and
+    aq0zmc-sj.myshopify.com. The only security.txt in the discovery chain is Shopify's own.
+  evidence_url: https://agilitas.com/.well-known/security.txt
+
+- id: rfc8594
+  name: RFC 8594 Sunset header
+  conforms: false
+  evidence: No Sunset or Deprecation header observed and no deprecation policy published.
+  evidence_url: lifecycle/agilitassports-lifecycle.yml
+
+- id: a2a
+  name: A2A Agent Card
+  conforms: false
+  evidence: >-
+    /.well-known/agent-card.json and /.well-known/agent.json both return HTTP 404 on every Agilitas
+    host.
+  evidence_url: https://agilitas.com/.well-known/agent-card.json
+
+- id: openapi
+  name: OpenAPI
+  conforms: false
+  evidence: >-
+    /openapi.json, /openapi.yaml, /swagger.json and /api-docs return 404 or an HTML shell on
+    agilitas.com. No OpenAPI is published anywhere; the machine-readable contract is the MCP
+    tools/list inputSchema set instead.
+  evidence_url: https://agilitas.com/openapi.json
+
+compliance_certifications:
+  published: false
+  note: >-
+    No SOC 2, ISO 27001, PCI DSS or other certification is claimed on any Agilitas page, and no trust
+    center exists. Card data is handled by Shopify's payment handlers, not by Agilitas. No Compliance
+    pointer is claimed.
+
+regulatory_note: >-
+  Indian direct-to-consumer retail. No sector regime (financial, health, telecom) applies to the
+  published surface.

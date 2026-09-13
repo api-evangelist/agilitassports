@@ -1,0 +1,66 @@
+generated: '2026-09-12'
+method: searched
+source: >-
+  https://agilitas.com/llms.txt (HTTP 200) and https://agilitas.com/agents.md (HTTP 200); response
+  headers observed on POST https://agilitas.com/api/ucp/mcp (HTTP 200), 2026-09-12
+name: Agilitas rate limits
+slug: agilitassports
+docs: https://agilitas.com/llms.txt
+
+limit_count: 0
+limit_count_note: >-
+  Zero is the honest number: Agilitas states that a limit exists and names the exhaustion status, but
+  publishes no quantity, window or burst anywhere. Nothing numeric can be recorded without inventing
+  it.
+
+limits:
+- scope: per-IP
+  surface: https://agilitas.com/api/ucp/mcp (UCP Commerce MCP)
+  window: not published
+  limit: not published
+  burst: not published
+  documented_statement: >-
+    "Respect rate limits. The MCP endpoint is rate-limited per IP. Back off on 429 responses."
+  source: https://agilitas.com/llms.txt
+  method: searched
+
+exhaustion:
+  status_code: 429
+  documented: true
+  source: https://agilitas.com/llms.txt
+  retry_after_header: not documented and not observed
+  guidance: Back off on 429.
+
+response_headers:
+  standard_ratelimit_headers: none
+  ietf_ratelimit_headers: none
+  x_ratelimit_headers: none
+  observed_on_200:
+  - header: shopify-complexity-score
+    value_observed: '310'
+    meaning: >-
+      Cost of the request in Shopify's complexity units. A cost signal with no published budget, so
+      it cannot be turned into a pacing decision.
+  - header: shopify-complexity-score-v2
+    value_observed: '31'
+  - header: x-request-id
+    value_observed: '<uuid>-<epoch-seconds>'
+    meaning: Per-request identifier; quote it when reporting a problem.
+  - header: server-timing
+    meaning: 'processing/db durations plus edge, country, asn, servedBy and requestID.'
+  - header: x-shopify-ucp-mcp-api-version
+    value_observed: '2026-08-25'
+  note: >-
+    No RateLimit-Limit / RateLimit-Remaining / RateLimit-Reset, no X-RateLimit-* and no Retry-After
+    on a successful response. The only runtime signal an agent gets is the cost of what it just
+    spent, not what it has left.
+
+storefront_json:
+  surface: https://agilitas.com/products.json and the other documented storefront JSON routes
+  documented_limits: none
+  observed_headers: none carrying a rate-limit signal
+  note: Shopify Online Store routes are edge-cached; no per-key budget is published.
+
+cross_links:
+  conventions: conventions/agilitassports-conventions.yml
+  errors: errors/agilitassports-problem-types.yml

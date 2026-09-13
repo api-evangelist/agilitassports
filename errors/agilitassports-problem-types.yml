@@ -1,0 +1,112 @@
+generated: '2026-09-12'
+method: probed
+source: >-
+  Live JSON-RPC probes against https://agilitas.com/api/ucp/mcp (2026-09-12) and HTTP probes of
+  https://agilitas.com/.well-known/* and https://agilitas.com/api/ucp/mcp (GET)
+name: Agilitas error catalog
+slug: agilitassports
+format: json-rpc-2.0
+rfc9457: false
+rfc9457_note: >-
+  No application/problem+json anywhere on this surface. There is no OpenAPI to derive 4xx/5xx
+  responses from, so every entry below was observed on a live call rather than read out of a spec.
+
+envelope:
+  transport: JSON-RPC 2.0 over HTTP POST
+  http_status_on_error: 200
+  http_status_note: >-
+    Application errors are returned INSIDE a 200 response as a JSON-RPC error object. An agent that
+    branches on HTTP status alone will treat a failed call as a success — branch on the presence of
+    result vs error.
+  shape: |
+    {
+      "jsonrpc": "2.0",
+      "id": <request id>,
+      "error": {
+        "code": <integer>,
+        "message": "<string>",
+        "data": { "code": "<string>", "content": "<string>", "continue_url": "<url>" }
+      }
+    }
+  fields:
+  - field: error.code
+    type: integer
+    note: JSON-RPC numeric code. -32001 observed (server-defined range).
+  - field: error.message
+    type: string
+    note: Short human-readable summary.
+  - field: error.data.code
+    type: string
+    note: Machine-readable sub-code. This is the field to branch on.
+  - field: error.data.content
+    type: string
+    note: Remediation prose.
+  - field: error.data.continue_url
+    type: string (url)
+    note: >-
+      A hand-off URL for the buyer — observed as https://aq0zmc-sj.myshopify.com/, the storefront —
+      so the agent can pass the human back to the shop when it cannot proceed.
+
+problem_types:
+- id: invalid_profile_url
+  jsonrpc_code: -32001
+  message: UCP discovery failed
+  data_code: invalid_profile_url
+  observed_content: 'Unable to fetch agent profile: Missing profile uri'
+  cause: >-
+    The call omitted meta.ucp-agent.profile, or supplied a profile URI the server could not fetch.
+    Required on all 13 UCP tools.
+  remediation: >-
+    Publish a reachable UCP agent profile and pass its URI as meta["ucp-agent"].profile on every
+    call.
+  observed_on:
+  - method: tools/call (get_product with empty arguments)
+  - method: prompts/list
+  - method: resources/list
+  - method: 'does_not_exist (unknown method)'
+  note: >-
+    This check runs BEFORE method dispatch and before argument validation, so it masks other errors:
+    an unknown method name and a malformed argument set both return this same error. An agent cannot
+    distinguish "bad method" from "bad arguments" until it supplies a valid agent profile.
+  http_status: 200
+  probed: '2026-09-12'
+
+- id: not_found
+  transport: HTTP (not JSON-RPC)
+  http_status: 404
+  observed_on:
+  - 'GET https://agilitas.com/api/ucp/mcp (the endpoint is POST-only)'
+  - 'GET https://agilitas.com/.well-known/security.txt'
+  - 'GET https://agilitas.com/.well-known/api-catalog'
+  - 'GET https://agilitas.com/.well-known/agent-card.json'
+  body: Shopify HTML 404 page (text/html), not JSON
+  note: >-
+    Storefront 404s return an HTML page, so an agent must not assume a JSON body on a non-200 from
+    this origin.
+  probed: '2026-09-12'
+
+- id: not_acceptable
+  transport: HTTP
+  http_status: 406
+  observed_on:
+  - 'GET https://agilitas.com/account/login with a scripted client'
+  note: >-
+    Customer-account routes refuse non-browser clients. This is an edge policy on a human page, not
+    an API error, and the page exists for a real browser.
+  probed: '2026-09-12'
+
+undocumented:
+  note: >-
+    Agilitas publishes no error reference. Rate-limit exhaustion is stated in /llms.txt as a 429 with
+    a back-off instruction but was not provoked, so no 429 body is recorded here. Checkout and
+    payment failure codes were not probed: doing so would require creating a real cart and a real
+    checkout against a live production store, which this pipeline does not do.
+  not_probed:
+  - 429 rate-limit exhaustion body
+  - payment decline / checkout failure codes
+  - inventory and availability errors
+
+cross_links:
+  conventions: conventions/agilitassports-conventions.yml
+  rate_limits: rate-limits/agilitassports-rate-limits.yml
+  mcp: mcp/agilitassports-mcp.yml
