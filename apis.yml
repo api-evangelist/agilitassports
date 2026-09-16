@@ -28,6 +28,20 @@ tags:
 - Manufacturing
 - Agentic Commerce
 - Universal Commerce Protocol
+- MCP
+- Shopify
+- India
+tags_raw:
+- Company
+- Commerce
+- E-Commerce
+- Retail
+- Sportswear
+- Footwear
+- Athleisure
+- Manufacturing
+- Agentic Commerce
+- Universal Commerce Protocol
 - Model Context Protocol
 - Shopify
 - India
@@ -50,6 +64,13 @@ apis:
   humanURL: https://agilitas.com/agents.md
   baseURL: https://agilitas.com/api/ucp/mcp
   tags:
+  - Commerce
+  - Catalog
+  - Cart
+  - Checkout
+  - Order
+  - Agentic Commerce
+  tags_raw:
   - Commerce
   - Catalog
   - Cart
@@ -92,6 +113,11 @@ apis:
     returned HTTP 200 application/json on 2026-09-12 — and Agilitas names exactly these paths in its
     own /llms.txt.
   tags:
+  - Product
+  - Collection
+  - Catalog
+  - Sitemap
+  tags_raw:
   - Products
   - Collections
   - Catalog
