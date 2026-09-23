@@ -3,7 +3,6 @@ method: probed
 source: live GET probes of /.well-known/* on every Agilitas host, 2026-09-12
 name: Agilitas well-known documents
 slug: agilitassports
-
 hosts:
 - host: agilitas.com
   role: storefront, agent-discovery and MCP host
@@ -11,32 +10,28 @@ hosts:
   - path: /.well-known/ucp
     status: 200
     content_type: application/json
-    file: well-known/agilitassports-ucp.json
-    note: >-
-      Universal Commerce Protocol merchant profile — version 2026-08-25 plus two prior versions, the
-      dev.ucp.shopping MCP service endpoint, seven shopping capabilities (checkout, cart, order,
-      fulfillment, discount, catalog.search, catalog.lookup plus the dev.shopify.catalog extension)
-      and two payment handlers (Google Pay, Shopify card).
+    file: agilitassports-ucp.json
+    note: Universal Commerce Protocol merchant profile — version 2026-08-25 plus two prior versions, the
+      dev.ucp.shopping MCP service endpoint, seven shopping capabilities (checkout, cart, order, fulfillment,
+      discount, catalog.search, catalog.lookup plus the dev.shopify.catalog extension) and two payment
+      handlers (Google Pay, Shopify card).
   - path: /.well-known/openid-configuration
     status: 200
     content_type: application/json
-    file: well-known/agilitassports-openid-configuration.json
-    note: >-
-      Shopify customer-account OIDC discovery. Issuer
-      https://shopify.com/authentication/99796025642; authorization, token, logout and JWKS
-      endpoints all delegated to shopify.com.
+    file: agilitassports-openid-configuration.json
+    note: Shopify customer-account OIDC discovery. Issuer https://shopify.com/authentication/99796025642;
+      authorization, token, logout and JWKS endpoints all delegated to shopify.com.
   - path: /.well-known/oauth-authorization-server
     status: 200
     content_type: application/json
-    file: well-known/agilitassports-oauth-authorization-server.json
+    file: agilitassports-oauth-authorization-server.json
     note: Byte-identical body to the OIDC discovery document (RFC 8414 alias).
   - path: /.well-known/oauth-protected-resource
     status: 200
     content_type: application/json
-    file: well-known/agilitassports-oauth-protected-resource.json
-    note: >-
-      RFC 9728 protected-resource metadata. resource https://agilitas.com, authorization_servers
-      ["https://shopify.com/authentication/99796025642"], bearer via header.
+    file: agilitassports-oauth-protected-resource.json
+    note: RFC 9728 protected-resource metadata. resource https://agilitas.com, authorization_servers ["https://shopify.com/authentication/99796025642"],
+      bearer via header.
   - path: /.well-known/security.txt
     status: 404
   - path: /.well-known/api-catalog
@@ -49,28 +44,26 @@ hosts:
     status: 404
   - path: /.well-known/aauth-resource.json
     status: 404
-
 - host: www.agilitas.com
   role: www alias of the storefront host
   documents:
   - path: /.well-known/ucp
     status: 200
     content_type: application/json
-    file: well-known/agilitassports-ucp.json
+    file: agilitassports-ucp.json
     note: Same document as the apex host; saved once.
   - path: /.well-known/openid-configuration
     status: 200
     content_type: application/json
-    file: well-known/agilitassports-openid-configuration.json
+    file: agilitassports-openid-configuration.json
   - path: /.well-known/oauth-authorization-server
     status: 200
     content_type: application/json
-    file: well-known/agilitassports-oauth-authorization-server.json
+    file: agilitassports-oauth-authorization-server.json
   - path: /.well-known/oauth-protected-resource
     status: 200
     content_type: application/json
-    note: >-
-      Same shape with resource https://www.agilitas.com. Not saved separately — the apex copy is the
+    note: Same shape with resource https://www.agilitas.com. Not saved separately — the apex copy is the
       canonical one.
   - path: /.well-known/security.txt
     status: 404
@@ -84,7 +77,6 @@ hosts:
     status: 404
   - path: /.well-known/aauth-resource.json
     status: 404
-
 - host: aq0zmc-sj.myshopify.com
   role: Shopify permanent store domain — also serves both MCP endpoints
   documents:
@@ -114,20 +106,17 @@ hosts:
     status: 404
   - path: /.well-known/aauth-resource.json
     status: 404
-
 - host: shopify.com
-  role: >-
-    Third-party authorization server named in Agilitas' own oauth-protected-resource document.
-    Probed because the discovery chain points here — it is Shopify's host, not Agilitas'.
+  role: Third-party authorization server named in Agilitas' own oauth-protected-resource document. Probed
+    because the discovery chain points here — it is Shopify's host, not Agilitas'.
   documents:
   - path: /.well-known/security.txt
     status: 200
     content_type: text/plain
     file: null
-    note: >-
-      Shopify's own RFC 9116 policy (security@shopify.com, HackerOne). NOT saved and NOT counted as
-      an Agilitas document — Agilitas serves no security.txt on any host it controls, so no
-      SecurityTxt and no Security pointer is claimed on its behalf.
+    note: Shopify's own RFC 9116 policy (security@shopify.com, HackerOne). NOT saved and NOT counted as
+      an Agilitas document — Agilitas serves no security.txt on any host it controls, so no SecurityTxt
+      and no Security pointer is claimed on its behalf.
   - path: /.well-known/openid-configuration
     status: 404
   - path: /.well-known/oauth-authorization-server
@@ -146,7 +135,6 @@ hosts:
     status: 404
   - path: /.well-known/aauth-resource.json
     status: 404
-
 other_agent_documents:
 - path: /llms.txt
   host: agilitas.com
@@ -166,20 +154,17 @@ other_agent_documents:
 - path: /robots.txt
   host: agilitas.com
   status: 200
-  note: >-
-    Carries an agent policy in its comment header — points at /agents.md, /.well-known/ucp and
-    /api/ucp/mcp, and states that checkout, payment and order placement must not be completed by an
-    agent without contemporaneous human approval. Disallows /cart.js and /recommendations/products
-    with the instruction that agents should use UCP/MCP instead.
-
+  note: Carries an agent policy in its comment header — points at /agents.md, /.well-known/ucp and /api/ucp/mcp,
+    and states that checkout, payment and order placement must not be completed by an agent without contemporaneous
+    human approval. Disallows /cart.js and /recommendations/products with the instruction that agents
+    should use UCP/MCP instead.
 summary:
   hits: 4
   misses: 6
   security_txt: false
   api_catalog: false
   agent_card: false
-  note: >-
-    Four real documents served on hosts Agilitas controls (the UCP merchant profile plus three
-    OAuth/OIDC discovery documents), each on three hosts. No security.txt, no api-catalog and no A2A
-    agent card anywhere on an Agilitas host, so no SecurityTxt and no AgentCard pointer is claimed.
-    The only security.txt in the chain belongs to Shopify.
+  note: Four real documents served on hosts Agilitas controls (the UCP merchant profile plus three OAuth/OIDC
+    discovery documents), each on three hosts. No security.txt, no api-catalog and no A2A agent card anywhere
+    on an Agilitas host, so no SecurityTxt and no AgentCard pointer is claimed. The only security.txt
+    in the chain belongs to Shopify.
