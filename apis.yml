@@ -96,6 +96,9 @@ apis:
     url: errors/agilitassports-problem-types.yml
   - type: RateLimits
     url: rate-limits/agilitassports-rate-limits.yml
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: ucp
 - aid: agilitassports:agilitassports-storefront-json-api
   name: Agilitas Storefront JSON API
   description: >-
@@ -106,7 +109,6 @@ apis:
     Online Store routes served on the Agilitas domain and named by Agilitas in its own published
     agent instructions.
   humanURL: https://agilitas.com/llms.txt
-  baseURL: https://agilitas.com
   x-base-note: >-
     The site root IS the API base for this entry, not a marketing URL standing in for one. Shopify
     Online Store JSON routes are served off the storefront origin — https://agilitas.com/products.json
@@ -127,6 +129,9 @@ apis:
     url: https://agilitas.com/llms.txt
   - type: LLMsTxt
     url: llms/agilitassports-llms.txt
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: storefront-json
 common:
 - type: Website
   url: https://agilitas.com/
